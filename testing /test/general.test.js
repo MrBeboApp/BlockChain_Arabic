@@ -25,6 +25,7 @@ describe("will testing the use name",()=>{
 
     it("my age is 35",()=>{
         age = new age
+        
         assert.ok(age.myAge())
         assert.equal(age.myAge(), 35);
     })
