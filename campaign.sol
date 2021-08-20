@@ -20,15 +20,17 @@ contract CampaignFactory{
 
 contract Campaign {
     
+    
+  mapping(address=>bool) approvals;
+
 
     //شكل الاسركت للريكويست لانشاء الكامبين
     struct Request{
         string  description;
          uint value;
-         address recipient;
+         address payable recipient;
          bool complete;
          uint approvalCount;
-             mapping(address=>bool) approvals;
 
     }
     
@@ -74,11 +76,11 @@ contract Campaign {
     
     //الداله الخاصة بأنشاء ريكويست  لانشاء كمبين
     
-    function createRequest(string  memory description,uint value,address recipient) public restricted{
+    function createRequest(string  memory description,uint value,address payable recipient) public restricted{
   Request memory newRequest = Request ({
            description: description,
            value:value,
-           recipient :recipient,
+           recipient : recipient,
            complete:false,
            approvalCount: 0
         });
@@ -92,10 +94,10 @@ contract Campaign {
         //الفرق بين الsorage and memory ان الاستوردج تاخد نسخة جديده موقته  ولا تسبدال الذي بالذاكرة
         Request storage request = requests[index];
         
-        require(request[msg.sender]);
-        require(!request.approvals[msg.sender]);
+        require(approvals[msg.sender]);
+        require(!approvals[msg.sender]);
         
-        request.approvals[msg.sender] = true;
+       approvals[msg.sender] = true;
         request.approvalCount++;
         
     }
