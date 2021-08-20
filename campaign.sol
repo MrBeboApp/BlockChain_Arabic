@@ -2,8 +2,25 @@
 
 pragma solidity >=0.7.0 <0.9.0;
 
-contract Campaign{
+
+contract CampaignFactory{
+    Campaign [] deployedCampaigns;
+
+    function createCampaign (uint minium )  public{
+        Campaign  newCampaign  = new Campaign(minium, msg.sender);
+        deployedCampaigns.push(newCampaign);
+
+    }
     
+    function getDeployedCampaign() public view returns( Campaign [] memory ) {
+
+        return   deployedCampaigns;
+    }
+}
+
+contract Campaign {
+    
+
     //شكل الاسركت للريكويست لانشاء الكامبين
     struct Request{
         string  description;
@@ -11,7 +28,8 @@ contract Campaign{
          address recipient;
          bool complete;
          uint approvalCount;
-         mapping(address=>bool) approvals;
+             mapping(address=>bool) approvals;
+
     }
     
 
@@ -26,13 +44,14 @@ contract Campaign{
         
         //عناوين مجموعة المساهمين
       mapping (address=>bool) public approvers;
+      uint public approversCount ;
             
      
             
     //لابد من ادخال اقل مبلغ للمساهمة قبل عمل العقد او نسخة منه
-    constructor(uint minimum){
+    constructor(uint minimum,address creator){
         //اعطاء القيم لمدير العقد و تسجيل اقل قيمة للتبرع
-        manager = msg.sender;
+        manager = creator;
         minimumContributionMoney = minimum;
         
         
@@ -50,6 +69,7 @@ contract Campaign{
         require(msg.value >= minimumContributionMoney);
         //اضاة المتبرع لمجموعه عناوين المتبرعين
         approvers[msg.sender] = true;
+        approversCount ++;
     }
     
     //الداله الخاصة بأنشاء ريكويست  لانشاء كمبين
@@ -79,4 +99,14 @@ contract Campaign{
         request.approvalCount++;
         
     }
+    
+    function finalizeRequest(uint index)  public restricted{
+        Request storage request = requests[index];
+        require(request.approvalCount >(approversCount/2));
+        require(!request.complete);
+        request.recipient.transfer(request.value);
+        request.complete=true;
+        
+    }
+    
 }
